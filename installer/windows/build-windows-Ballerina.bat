@@ -4,7 +4,6 @@ set BALPOS=windows
 set WIXDIST=resources\wix
 set ICONDIST=resources\icons
 set SIGNTOOLLOC="%programfiles(x86)%\Windows Kits\10\bin\10.0.16299.0\x64\signtool.exe"
-set CERTLOC="resources\cert\ballerina-digicert.pfx"
 
 :argumentLoop
 IF NOT "%1"=="" (
@@ -20,13 +19,23 @@ IF NOT "%1"=="" (
         SET DISTLOC=%2
         SHIFT
     )
+	IF "%1"=="--cert-path" (
+        SET CERTLOC=%2
+        SHIFT
+    )
 	SHIFT
 	goto argumentLoop
-) 
+)
 
 
 IF "%DIST%"==""  (
 	set DIST=all
+	rem echo The syntax of the command is incorrect. Missing argument dist.
+	rem goto EOF
+)
+
+IF "%CERTLOC%"==""  (
+	set CERTLOC="resources\cert\ballerina-digicert.pfx"
 	rem echo The syntax of the command is incorrect. Missing argument dist.
 	rem goto EOF
 )
