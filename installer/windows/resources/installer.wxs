@@ -166,8 +166,8 @@
             <Custom Action="SetApplicationRootDirectory" Before="InstallFinalize"/>
         </InstallExecuteSequence>
         <!-- Include the user interface -->
-        <WixVariable Id="WixUIBannerBmp" Value="resources/Banner.png"/>
-        <WixVariable Id="WixUIDialogBmp" Value="resources/Dialog.png"/>
+        <WixVariable Id="WixUIBannerBmp" Value="resources/Banner.jpg"/>
+        <WixVariable Id="WixUIDialogBmp" Value="resources/Dialog.jpg"/>
         <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR"/>
     </Product>
 </Wix>
