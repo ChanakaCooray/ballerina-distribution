@@ -23,6 +23,10 @@ IF NOT "%1"=="" (
         SET CERTLOC=%2
         SHIFT
     )
+    IF "%1"=="--wix-path" (
+        SET WIXDIST=%2
+        SHIFT
+    )
 	SHIFT
 	goto argumentLoop
 )
