@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+>
+    <?if $(var.Arch) = 386 ?>
+    <?define ProdId = {6147400c-24be-4f94-ba82-5a1c76320f10} ?>
+    <?define UpgradeCode = {1008193c-0d2f-4c55-b7e2-5b3342ef042b} ?>
+    <?define SysFolder=SystemFolder ?>
+    <?define PlatformArch=x86 ?>
+    <?define ProgramFilesDir=ProgramFilesFolder ?>
+    <?else?>
+    <?define ProdId = {8ca1298f-2d74-4ca1-8f56-1d1147df5034} ?>
+    <?define UpgradeCode = {7b6926c8-c11f-426a-94f9-66fdf933a682} ?>
+    <?define SysFolder=System64Folder ?>
+    <?define PlatformArch=x64 ?>
+    <?define ProgramFilesDir=ProgramFiles64Folder ?>
+    <?endif?>
+
+    <Product
+            Id="*"
+            Name="Ballerina $(var.balVersion)"
+            Language="1033"
+            Version="$(var.WixbalVersion)"
+            Manufacturer="https://wso2.com"
+            UpgradeCode="$(var.UpgradeCode)">
+        <Package
+                Id='*'
+                Keywords='Installer'
+                Description="The Ballerina Installer"
+                Comments="The Ballerina Installer."
+                InstallerVersion="300"
+                Compressed="yes"
+                InstallScope="perMachine"
+                Languages="1033"
+                Platform="$(var.PlatformArch)"/>
+
+        <UI>
+            <UIRef Id="WixUI_InstallDir"/>
+            <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg">NOT Installed</Publish>
+            <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2">1</Publish>
+            <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="PrepareDlg" Order="5">
+                WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID="1"
+            </Publish>
+        </UI>
+
+        <Property Id="ARPCOMMENTS"
+                  Value="Ballerina is a general purpose, concurrent and strongly typed programming language with both textual and graphical syntaxes, optimized for integration."/>
+        <Property Id="ARPCONTACT" Value="https://ballerinalang.org/"/>
+        <Property Id="ARPHELPLINK" Value="https://ballerinalang.org/"/>
+        <Property Id="ARPREADME" Value="https://ballerinalang.org/"/>
+        <Property Id="ARPURLINFOABOUT" Value="https://ballerinalang.org/"/>
+        <Media Id='1' Cabinet="bal.cab" EmbedCab="yes" CompressionLevel="high"/>
+        <Condition Message="Windows XP or greater required.">VersionNT >= 500</Condition>
+        <MajorUpgrade AllowDowngrades="yes"/>
+        <SetDirectory Id="INSTALLDIRROOT" Value="[$(var.ProgramFilesDir)]Ballerina"/>
+        <CustomAction
+                Id="SetApplicationRootDirectory"
+                Property="ARPINSTALLLOCATION"
+                Value="[INSTALLDIR]"/>
+        <!-- Define the directory structure and environment variables -->
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="INSTALLDIRROOT">
+                <Directory Id="INSTALLDIR" Name="ballerina-$(var.balVersion)">
+                </Directory>
+            </Directory>
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="BallerinaProgramShortcutsDir" Name="Ballerina-$(var.balVersion)"/>
+            </Directory>
+            <Directory Id="EnvironmentEntries">
+                <Directory Id="BallerinaEnvironmentEntries" Name="Ballerina-$(var.balVersion)"/>
+            </Directory>
+        </Directory>
+        <!-- Programs Menu Shortcuts -->
+        <DirectoryRef Id="BallerinaProgramShortcutsDir">
+            <Component Id="Component_BallerinaProgramShortCuts" Guid="{764ee6d4-917f-422c-87cb-cc0fff389765}">
+                <Shortcut
+                        Id="UninstallShortcut"
+                        Name="Uninstall Ballerina-$(var.balVersion)"
+                        Description="Uninstalls Ballerina-$(var.balVersion)"
+                        Target="[$(var.SysFolder)]msiexec.exe"
+                        Arguments="/x [ProductCode]"/>
+                <RemoveFolder
+                        Id="BallerinaProgramShortcutsDir"
+                        On="uninstall"/>
+                <RegistryValue
+                        Root="HKCU"
+                        Key="Software\Ballerina-$(var.balVersion)"
+                        Name="ShortCuts"
+                        Type="integer"
+                        Value="1"
+                        KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
+        <!-- Registry & Environment Settings -->
+        <DirectoryRef Id="BallerinaEnvironmentEntries">
+            <Component Id="Component_BallerinaEnvironment" Guid="{f9f2e5e9-d6fb-4ef3-8faf-38b5fd283237}">
+                <RegistryKey
+                        Root="HKCU"
+                        Key="Software\Ballerina-$(var.balVersion)"
+                        Action="create">
+                    <RegistryValue
+                            Name="installed"
+                            Type="integer"
+                            Value="1"
+                            KeyPath="yes"/>
+                    <RegistryValue
+                            Name="installLocation"
+                            Type="string"
+                            Value="[INSTALLDIR]"/>
+                </RegistryKey>
+				<RegistryKey
+                        Root="HKCR"
+                        Key=".balo\DefaultIcon"
+                        Action="createAndRemoveOnUninstall">
+                    <RegistryValue
+                            Type="string"
+                            Value="[INSTALLDIR]\icons\balo-teal.ico"/>
+                </RegistryKey>
+				<RegistryKey
+                        Root="HKCR"
+                        Key=".balx\DefaultIcon"
+                        Action="createAndRemoveOnUninstall">
+                    <RegistryValue
+                            Type="string"
+                            Value="[INSTALLDIR]\icons\balx-teal.ico"/>
+                </RegistryKey>
+				<RegistryKey
+                        Root="HKCR"
+                        Key=".bal\DefaultIcon"
+                        Action="createAndRemoveOnUninstall">
+                    <RegistryValue
+                            Type="string"
+                            Value="[INSTALLDIR]\icons\bal-teal.ico"/>
+                </RegistryKey>
+                <Environment
+                        Id="BallerinaHome"
+                        Action="set"
+                        Part="all"
+                        Name="BALLERINA_HOME"
+                        Permanent="no"
+                        System="yes"
+                        Value="[INSTALLDIR]"/>
+                <Environment
+                        Id="BallerinaPathEntry"
+                        Action="set"
+                        Part="last"
+                        Name="PATH"
+                        Permanent="no"
+                        System="yes"
+                        Value="%BALLERINA_HOME%\bin"/>
+                <RemoveFolder
+                        Id="BallerinaEnvironmentEntries"
+                        On="uninstall"/>
+            </Component>
+        </DirectoryRef>
+        <!-- Install the files -->
+        <Feature
+                Id="BallerinaTools"
+                Title="Ballerina"
+                Level="1">
+            <ComponentRef Id="Component_BallerinaEnvironment"/>
+            <ComponentGroupRef Id="AppFiles"/>
+            <ComponentRef Id="Component_BallerinaProgramShortCuts"/>
+        </Feature>
+        <!-- Update the environment -->
+        <InstallExecuteSequence>
+            <Custom Action="SetApplicationRootDirectory" Before="InstallFinalize"/>
+        </InstallExecuteSequence>
+        <!-- Include the user interface -->
+        <WixVariable Id="WixUIBannerBmp" Value="resources/Banner.png"/>
+        <WixVariable Id="WixUIDialogBmp" Value="resources/Dialog.png"/>
+        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR"/>
+    </Product>
+</Wix>
